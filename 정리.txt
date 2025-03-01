@@ -1,0 +1,132 @@
+검색창 으로 시작
+검색을 하면 youtube 에서 검색을해서 결과물들을 받아옴.
+받은 결과를 카드 리스트 형식으로 썸네일과 비디오 정보를 카드 형식으로 보여줌
+카드 리스트 형식에서 grid 로 바꾸면 그리드로 결과를 보여줌.
+
+카드 리스트뷰랑, grid뷰에 각각 검색 탭이 있어서 검색을 하게되면 결과물도 업데이트됨.
+
+-> 유튜브 검색 API 사용
+API 키 AIzaSyAUhBgW8AlogBgojlp3zQf63RM6Ybuqk-k
+
+https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=10&key={받은 API키 값}
+
+//
+https://www.googleapis.com/youtube/v3/videos?part=snippet&chart=mostPopular&maxResults=10&key=AIzaSyAUhBgW8AlogBgojlp3zQf63RM6Ybuqk-k
+
+검색을 하면 id를 줌. 그 id를 통해 추가적으로 접근해야 url을 준다.
+
+YouTube API 전격 분석!
+https://www.googleapis.com/youtube/v3/search?part=snippet&q=강아지&key=AIzaSyAUhBgW8AlogBgojlp3zQf63RM6Ybuqk-k
+
+response.body {}
+    kind , etag ,,, item
+
+    items = []
+
+    items의 구조
+        kind,etag,id(video Id) , snippet 영상의 정보
+            snippet 내부
+                publishdAt "게시날짜"
+                channelId 채널아이디
+                title 제목
+                description 설명
+                thumbnail -> default -> url
+                channelTitle ->채널 제목
+
+
+// 프레젠테이션 레이어
+SearchView : SearchViewModel
+    -ListView : ListViewModel
+    -GridView : GridViewModel
+
+
+//개밥이라 검색하면 에러가뜸 ...
+
+
+// 순서대로 다시 정리해보자
+
+전체 스크린 뷰: 입력창뷰 , 리스트뷰 그리드뷰 를 포함
+전체 스크린 뷰모델 : 입력된 검색어 관리, 진행중인 상태 관리 , 그리드뷰표시 여뷰 상태 , 데이터리스트(usecase) . 전체 뷰를 관리함
+
+선생님 코드를 다시 봐보자
+Search View -> 검색하는 화면
+
+usecase를 singleSource로 사용. 각 상태까지 usecase에서 관리 , 각 뷰모델이 usecase를 공유
+전체 스크린을 가짐 ,
+
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+< Use-Case에서 시작 >
+
+1. 레포지토리 생성자 가짐
+2. _itemsController 컨트롤러 가지고 items는 stream으로 배출
+( 이를 뷰 모델에서 받아서 값을 업데이트 할 것임 )
+3. _stateController 컨트롤러로 state 또한 stream 으로 배출
+
+-> Stream 이 동작하는 원래. -> 값이 들어오면 이를 배출함. 초기화해줄필요없음
+
+execute 실행되면 ?
+요청이 오면 -> 컨트롤러에 값 주입
+            상태 컨트롤러에도 값 주입
+
+상태컨트롤러 또한 상황에 따라 값이 주입되니 listen 통해서 상태를 수신
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+<Search Bar View >
+사용 해야 하는것 search 메서드
+< Search Bar View Model >
+해야하는 것 :search 메서드
+    어떻게 ? : 버튼을 누르면 usecase의 execute메서드 사용,(스트림에 값 주입),(상태도주입)
+
+받아야 하는 것
+    상태 필요 X
+    Items 필요 X
+    execute 메서드 사용해야함
+    notifyListeners 필요 X
+
+dispose 필요 할 것 같음 어떻게 쓸지 ->
+
+**** dispose에 대해서 공부
+
+-> Search Bar에서는 이렇게 text 를 입력받아서 usecase의 execute 메서드를 사용하여
+items와 state를 stream에 주입한다.
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+<List View Screen >
+해야하는 것 : 화면에 사진들 CardWidget 형태로 출력
+    어떻게 ? 스트림에 주입된 items를 viewModel에서 받아서 뽑기
+필요한 것 : items
+
+< List View Model Screen >
+해야 하는 것 :
+    items를 리슨해서 items의 구성을 바꿔주기.
+*** 문제 발생
+    각 뷰모델 끼리 items를 가지고 있다면
+    list -> grid 로 이동했을때 items 는 공백. 공유하길 원한다 .
+    2가지 해결방법 : 1. gridview 와 listview 를 합친다.
+    (그리드 여부)상태 또한 이곳에서 받아오고 그를 기반으로 리스트인지 그리드인지를 출력
+    2. 수신할때마다 Use-Case에서 items 생성 ( 단방향 흐름 위반 해서 X )
+-------------------> 개조 -----------------------------------------------
+< List Or Grid View >
+해야 하는 것. grid View / list View 둘 다 만들기
+그리드인지 리스트인지 여부로 출력. 그 여부를 상태로 만들자
+그렇다면 버튼도 필요함 . 버튼 내에 메서드
+
+필요한 것, -> 리스트 상태, 리스트를 그리드로 바꾸는 메서드
+            streaming으로 items를 받아오기
+
+< List Or Grid View Model >
+state 와 items 를 listen 으로 받아옴. 받아오는건 문제없음
+
+하지만 이제 문제 , 높이에 대한 문제
+
+현재 위젯 구조를 다시 생각해보자
+
+SizedBox로 높이 지정해주고 그 내부에 넣음
+
+
+----------------------끝 -------------------------------------------------
+
+디자인 작업 시작

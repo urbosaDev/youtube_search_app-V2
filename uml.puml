@@ -1,0 +1,106 @@
+@startuml
+' 컴포넌트 정의
+package "MyApp" {
+  class MyApp {
+    +build(BuildContext context) : Widget
+  }
+}
+
+package "UI 계층" {
+  package "Screen" {
+    class Screen {
+      +build(BuildContext context) : Widget
+    }
+    class ScreenViewModel {
+      +snippetUseCase : SnippetUseCase
+      +ScreenViewModel(SnippetUseCase snippetUseCase)
+    }
+  }
+
+  package "SearchBarView" {
+    class SearchBarView {
+      -queryTextController : TextEditingController
+      +build(BuildContext context) : Widget
+    }
+    class SearchBarViewModel {
+      +snippetUseCase : SnippetUseCase
+      +SearchBarViewModel(SnippetUseCase snippetUseCase)
+      +search(String query) : Future<void>
+      +dispose() : void
+    }
+  }
+
+  package "ListOrGridView" {
+    class ListOrGridView {
+      +build(BuildContext context) : Widget
+      -list(viewModel) : Widget
+      -grid(viewModel) : Widget
+    }
+    class ListOrGridViewModel {
+      +snippetUseCase : SnippetUseCase
+      +streamingState : Stream<SearchState>
+      +streamingItems : Stream<List<SearchItemModel>>
+      +state : SearchState
+      +isListOrGrid : bool
+      +toggleIsListOrGrid() : void
+      +items : List<SearchItemModel>
+      +ListOrGridViewModel(SnippetUseCase snippetUseCase)
+      +dispose() : void
+    }
+  }
+}
+
+package "Domain 계층" {
+  class SnippetUseCase {
+    +SnippetUseCase(SnippetRepository snippetRepository)
+    +execute(String query) : Future<void>
+    +streamingState : Stream<SearchState>
+    +streamingItems : Stream<List<SearchItemModel>>
+  }
+  enum SearchState {
+    idle,
+    loading,
+    finishied,
+    error
+  }
+}
+
+package "Data 계층" {
+  class SnippetRepository {
+    +searchSnippetYoutubeService : SearchSnippetYoutubeService
+    +SnippetRepository(SearchSnippetYoutubeService searchSnippetYoutubeService)
+  }
+  class SearchSnippetYoutubeService {
+  }
+  class SearchItemModel {
+  }
+}
+
+package "Core (Widgets)" {
+  class CardWidget {
+  }
+}
+
+' 관계 정의
+MyApp --> UI.Screen : "화면 생성"
+MyApp --> Domain.SnippetUseCase : "UseCase 생성"
+MyApp --> UI.SearchBarViewModel : "SearchBar ViewModel 생성"
+MyApp --> UI.ListOrGridViewModel : "ListOrGrid ViewModel 생성"
+MyApp --> UI.ScreenViewModel : "Screen ViewModel 생성"
+
+UI.Screen --> UI.SearchBarView : "SearchBarView 사용"
+UI.Screen --> UI.ListOrGridView : "ListOrGridView 사용"
+UI.Screen --> UI.ScreenViewModel : "Screen ViewModel 사용"
+
+UI.SearchBarView --> UI.SearchBarViewModel : "SearchBar ViewModel 사용"
+UI.SearchBarViewModel --> Domain.SnippetUseCase : "UseCase 호출"
+
+UI.ListOrGridView --> UI.ListOrGridViewModel : "ListOrGrid ViewModel 사용"
+UI.ListOrGridViewModel --> Domain.SnippetUseCase : "UseCase 스트림 구독"
+UI.ListOrGridView --> Core.CardWidget : "CardWidget 사용"
+
+Domain.SnippetUseCase --> Data.SnippetRepository : "Repository 사용"
+Data.SnippetRepository --> Data.SearchSnippetYoutubeService : "Service 사용"
+Domain.SnippetUseCase --> Data.SearchItemModel : "모델 반환"
+
+@enduml
