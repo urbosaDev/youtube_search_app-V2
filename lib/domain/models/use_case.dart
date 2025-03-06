@@ -17,39 +17,33 @@ enum SearchState {
 // enum
 
 class SnippetUseCase {
+  List<SearchItemModel> items = [];
 
   final SnippetRepository snippetRepository;
   SnippetUseCase(this.snippetRepository);
-
-// items는 뷰모델에 Stream 객체를 공유
-  final _itemsController = StreamController<List<SearchItemModel>>.broadcast();
-  Stream<List<SearchItemModel>> get streamingItems => _itemsController.stream;
 
 
   // state는 각 뷰모델에 state를 공유한다
   final _stateController = StreamController<SearchState>.broadcast();
   Stream<SearchState> get streamingState => _stateController.stream;
 
-
-
-  Future<void> execute(String query) async{
-
+  Future<void> execute(String query) async {
     // _stateController?.close();
     _stateController.sink.add(SearchState.loading);
     try {
       final res = await snippetRepository.getSnippet(query);
-      if (res!=null) {
-        _itemsController.sink.add(res.items);
+      if (res != null) {
+        print("#search $res");
+        items = res.items;
         _stateController.sink.add(SearchState.finishied);
       } else {
         _stateController.sink.add(SearchState.error);
       }
-    } catch(e) {
+    } catch (e) {
       _stateController.sink.add(SearchState.error);
-    } finally{
+    } finally {
       //완료 되었으니 다시 검색전 상태로 이동
       // _stateController.sink.add(SearchState.idle);
     }
-
   }
 }

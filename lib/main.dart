@@ -12,10 +12,8 @@ import 'ui/search_youtube/screen.dart';
 
 void main() {
   runApp(const MyApp());
-
+  // initializer를 따로 넣어서 시작 필요한 domain/data layer 클래스들 초기화
 }
-
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -31,27 +29,11 @@ class MyApp extends StatelessWidget {
       ),
       home: MultiProvider(
         providers: [
-          Provider<SnippetUseCase>(
-            create: (context) => SnippetUseCase(
-              SnippetRepository(
-                searchSnippetYoutubeService: SearchSnippetYoutubeService(),
-              ),
-            ),
-          ),
-          ChangeNotifierProvider<SearchBarViewModel>(
-            create: (context) => SearchBarViewModel(
-              Provider.of<SnippetUseCase>(context, listen: false),
-            ),
-          ),
-          ChangeNotifierProvider<ListOrGridViewModel>(
-            create: (context) => ListOrGridViewModel(
-              Provider.of<SnippetUseCase>(context, listen: false),
-            ),
-          ),
           ChangeNotifierProvider<ScreenViewModel>(
-            create: (context) => ScreenViewModel(
-              Provider.of<SnippetUseCase>(context, listen: false),
-            ),
+            create: (context) => ScreenViewModel(SnippetUseCase(
+                SnippetRepository(
+                    searchSnippetYoutubeService:
+                        SearchSnippetYoutubeService()))),
           ),
         ],
         child: Screen(),
