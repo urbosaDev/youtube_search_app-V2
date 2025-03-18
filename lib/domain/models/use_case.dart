@@ -19,6 +19,8 @@ enum SearchState {
 class SnippetUseCase {
   List<SearchItemModel> items = [];
 
+  SearchState _currentState = SearchState.idle;
+  SearchState get currentState => _currentState;
   final SnippetRepository snippetRepository;
   SnippetUseCase(this.snippetRepository);
 
@@ -35,11 +37,14 @@ class SnippetUseCase {
       if (res != null) {
         print("#search $res");
         items = res.items;
+        _currentState = SearchState.finishied;
         _stateController.sink.add(SearchState.finishied);
       } else {
+        _currentState = SearchState.error;
         _stateController.sink.add(SearchState.error);
       }
     } catch (e) {
+      _currentState = SearchState.error;
       _stateController.sink.add(SearchState.error);
     } finally {
       //완료 되었으니 다시 검색전 상태로 이동

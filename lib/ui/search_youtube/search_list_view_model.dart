@@ -7,14 +7,13 @@ import 'package:portpolio_flutter/domain/models/use_case.dart';
 class SearchListViewModel with ChangeNotifier {
   SnippetUseCase snippetUseCase;
 
-  SearchState state = SearchState.idle;
+  SearchState get state => snippetUseCase.currentState;
   List<SearchItemModel> get items => snippetUseCase.items;
   StreamSubscription<SearchState>? subscription;
 
   SearchListViewModel(this.snippetUseCase) {
     subscription = snippetUseCase.streamingState.listen(
       (data) {
-        state = data;
         notifyListeners();
       },
     );

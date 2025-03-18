@@ -7,7 +7,7 @@ import 'package:portpolio_flutter/domain/models/use_case.dart';
 class SearchGridViewModel with ChangeNotifier {
   SnippetUseCase snippetUseCase;
 
-  SearchState state = SearchState.idle;
+  SearchState get state => snippetUseCase.currentState;
   List<SearchItemModel> get items => snippetUseCase.items;
   StreamSubscription<SearchState>? subscription;
   SearchGridViewModel(this.snippetUseCase) {
@@ -15,7 +15,6 @@ class SearchGridViewModel with ChangeNotifier {
     // 뷰모델에서 state를 생성하고 useCase의 State가 변할때마다 이를 State에 넣음
     subscription = snippetUseCase.streamingState.listen(
       (data) {
-        state = data;
         notifyListeners();
       },
     );
