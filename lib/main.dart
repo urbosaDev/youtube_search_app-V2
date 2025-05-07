@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:portpolio_flutter/data/snippet_repository.dart';
 import 'package:portpolio_flutter/domain/models/use_case.dart';
-import 'package:portpolio_flutter/ui/search_youtube/list_or_grid_view_model.dart';
 import 'package:portpolio_flutter/ui/search_youtube/screenViewModel.dart';
-import 'package:portpolio_flutter/ui/search_youtube/search_bar_view_model.dart';
 
 import 'package:provider/provider.dart';
 

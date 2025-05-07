@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:portpolio_flutter/data/search_snippet_youtube_service.dart';
-import 'package:portpolio_flutter/data/snippet_repository.dart';
-import 'package:portpolio_flutter/domain/models/use_case.dart';
 import 'package:portpolio_flutter/ui/search_youtube/screenViewModel.dart';
 import 'package:portpolio_flutter/ui/search_youtube/search_bar_view_model.dart';
 import 'package:portpolio_flutter/ui/search_youtube/widgets/search_bar_view.dart';
@@ -26,40 +23,46 @@ class Screen extends StatelessWidget {
         title: Image.asset('assets/images/youtube_logo.png'),
         centerTitle: false,
       ),
-      body: Column(
-        children: [
-          ElevatedButton(
-              onPressed: () {
-                viewModel.toggleIsListOrGrid();
-              },
-              child: Text(
-                viewModel.isList ? '리스트' : '그리드',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              style: ButtonStyle(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ElevatedButton(
+                onPressed: () => viewModel.toggleIsListOrGrid(),
+                style: ButtonStyle(
                   backgroundColor: WidgetStatePropertyAll(Colors.black),
                   foregroundColor: WidgetStatePropertyAll(Colors.white),
                   alignment: Alignment.centerLeft,
                   side: WidgetStatePropertyAll(
-                      BorderSide(color: Colors.white, width: 2)))),
-          const SizedBox(height: 30),
-          ChangeNotifierProvider<SearchBarViewModel>(
-            create: (context) => SearchBarViewModel(viewModel.snippetUseCase),
-            child: SearchBarView(),
-          ),
-          const SizedBox(height: 30),
-          viewModel.isList
-              ? ChangeNotifierProvider<SearchListViewModel>(
-                  create: (context) =>
-                      SearchListViewModel(viewModel.snippetUseCase),
-                  child: SearchListView(),
-                )
-              : ChangeNotifierProvider<SearchGridViewModel>(
-                  create: (context) =>
-                      SearchGridViewModel(viewModel.snippetUseCase),
-                  child: SearchGridView(),
+                      BorderSide(color: Colors.white, width: 2)),
                 ),
-        ],
+                child: Text(
+                  viewModel.isList ? '리스트' : '그리드',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+              const SizedBox(height: 30),
+              ChangeNotifierProvider<SearchBarViewModel>(
+                create: (_) => SearchBarViewModel(viewModel.snippetUseCase),
+                child: SearchBarView(),
+              ),
+              const SizedBox(height: 30),
+              viewModel.isList
+                  ? ChangeNotifierProvider<SearchListViewModel>(
+                      create: (_) =>
+                          SearchListViewModel(viewModel.snippetUseCase),
+                      child: const SearchListView(),
+                    )
+                  : ChangeNotifierProvider<SearchGridViewModel>(
+                      create: (_) =>
+                          SearchGridViewModel(viewModel.snippetUseCase),
+                      child: const SearchGridView(),
+                    ),
+            ],
+          ),
+        ),
       ),
     );
   }

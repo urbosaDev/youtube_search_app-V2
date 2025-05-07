@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:portpolio_flutter/data/snippet_model.dart';
 import 'package:portpolio_flutter/domain/models/use_case.dart';
 
 //searchview의 상태만 관리하는 ViewModel
