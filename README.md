@@ -58,7 +58,7 @@ https://github.com/user-attachments/assets/ecd67d40-5de4-4e2f-89a4-343594d6b1bb
 
 ### 🗂️ 데이터 흐름 요약
 
-```mermaid
+```
 flowchart TD
     UI -->|입력| SearchBarViewModel
     SearchBarViewModel -->|execute()| SnippetUseCase
